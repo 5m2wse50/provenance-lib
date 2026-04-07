@@ -142,7 +142,7 @@ class UsageVarsDict(UserDict):
 
 
 @dataclass(frozen=False)
-class NamespaceCollections:
+class NamespaceCollections():
     usg_var_namespace: UsageVarsDict = field(default_factory=UsageVarsDict)
     usg_vars: Dict[UUID, UsageVariable] = field(default_factory=dict)
     action_namespace: Set[str] = field(default_factory=set)
@@ -409,7 +409,8 @@ def build_action_usage(node: ProvNode,
 
                 if not command_specific_md_context_has_been_printed:
                     if cfg.md_out_fp:
-                        fp = f'{cfg.md_out_fp}/{plg_action_name}'
+                        basename = os.path.basename(cfg.md_out_fp)
+                        fp = f'./{basename}/{plg_action_name}/'
                     else:
                         fp = f'./recorded_metadata/{plg_action_name}/'
 
@@ -417,7 +418,7 @@ def build_action_usage(node: ProvNode,
                         "The following command may have received additional "
                         "metadata .tsv files. To confirm you have covered "
                         "your metadata needs adequately, review the original "
-                        f"metadata, saved at '{fp}'")
+                        "metadata, saved at '{fp}'")
 
                 if not param_val.input_artifact_uuids:
                     md = init_md_from_md_file(node, param_name, unique_md_id,
@@ -494,11 +495,7 @@ def init_md_from_recorded_md(node: ProvNode, param_name: str, md_id: str,
         from qiime2 import Metadata
         return Metadata(md_df)
 
-    cwd = pathlib.Path.cwd()
-    if cfg.md_out_fp:
-        fn = str(cwd / cfg.md_out_fp / md_fn)
-    else:
-        fn = str(cwd / 'recorded_metadata' / md_fn)
+    fn = f'recorded_metadata/{md_fn}'
 
     md = cfg.use.init_metadata(ns[md_id], factory, dumped_md_fn=fn)
     plugin = node.action.plugin
@@ -757,10 +754,10 @@ def replay_citations(dag: ProvDAG, out_fp: FileName, deduplicate: bool = True,
     footer = []
     extra = [
         "",
-        "# This bibtex-formatted citation file can be imported into "
-        "popular citation ",
-        "# managers like Zotero and Mendeley, simplifying management and "
-        "formatting"
+        "# This bibtex-formatted citation file can be imported into ",
+        "# popular citation ",
+        "# managers like Zotero and Mendeley, simplifying management and ",
+        "# formatting"
     ]
     if not suppress_header:
         header = build_header(boundary=boundary, extra_text=extra) + ['\n']
